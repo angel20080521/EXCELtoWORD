@@ -93,13 +93,33 @@ export async function POST(request: NextRequest) {
     const { stdout, stderr } = await execAsync(command);
     console.log('Command completed');
     console.log('Stdout length:', stdout.length);
-    console.log('Stderr:', stderr);
+    console.log('Stderr length:', stderr.length);
+    console.log('Stdout content:', stdout.substring(0, 500)); // 只显示前500字符
+    console.log('Stderr content:', stderr.substring(0, 500)); // 只显示前500字符
 
     if (stderr) {
       console.error('Python script error:', stderr);
     }
 
-    const result = JSON.parse(stdout);
+    // 检查stdout是否为空或不是有效的JSON
+    if (!stdout || stdout.trim() === '') {
+      return NextResponse.json(
+        { error: 'Python脚本没有输出任何内容' },
+        { status: 500 }
+      );
+    }
+
+    let result;
+    try {
+      result = JSON.parse(stdout);
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      console.error('Raw stdout:', stdout);
+      return NextResponse.json(
+        { error: `Python脚本输出格式错误: ${parseError.message}` },
+        { status: 500 }
+      );
+    }
 
     if (result.error) {
       return NextResponse.json(

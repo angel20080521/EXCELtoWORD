@@ -36,8 +36,22 @@ export default function ExcelToWordGenerator() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '处理失败');
+        let errorMessage = '处理失败';
+        try {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } else {
+            // 如果不是JSON，尝试获取文本内容
+            const textContent = await response.text();
+            errorMessage = textContent || `HTTP ${response.status}: ${response.statusText}`;
+          }
+        } catch (parseError) {
+          // 如果解析失败，使用默认错误信息
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
       // API 直接返回文件流，处理下载
