@@ -2,6 +2,17 @@
 set -Eeuo pipefail
 
 COZE_WORKSPACE_PATH="${COZE_WORKSPACE_PATH:-$(pwd)}"
+VENV_PATH=""
+VENV_BACKUP_DIR=""
+
+restore_venv() {
+  if [ -n "${VENV_PATH}" ] && [ -n "${VENV_BACKUP_DIR}" ] && [ -e "${VENV_BACKUP_DIR}" ]; then
+    mv "${VENV_BACKUP_DIR}" "${VENV_PATH}"
+    echo "Restored local virtual environment: ${VENV_PATH}"
+  fi
+}
+
+trap restore_venv EXIT
 
 cd "${COZE_WORKSPACE_PATH}"
 
@@ -10,6 +21,18 @@ pnpm install --prefer-frozen-lockfile --prefer-offline --loglevel debug --report
 
 echo "Installing Python dependencies..."
 pip3 install -r requirements.txt || echo "Warning: Python dependencies installation failed, will try again at runtime"
+
+echo "Preparing build workspace..."
+for candidate in venv .venv; do
+  if [ -e "${candidate}" ]; then
+    VENV_PATH="${COZE_WORKSPACE_PATH}/${candidate}"
+    VENV_BACKUP_DIR="/tmp/exceltoword-${candidate//./}-build-backup-$$"
+    rm -rf "${VENV_BACKUP_DIR}"
+    echo "Temporarily moving ${candidate} out of the project to avoid Next.js symlink tracing issues..."
+    mv "${VENV_PATH}" "${VENV_BACKUP_DIR}"
+    break
+  fi
+done
 
 echo "Building the Next.js project..."
 pnpm next build

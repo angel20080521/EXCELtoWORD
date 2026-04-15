@@ -24,6 +24,10 @@ coverage/
 .env.test.local
 .env.production.local
 
+# Python environments
+venv/
+.venv/
+
 # Logs
 logs/
 *.log

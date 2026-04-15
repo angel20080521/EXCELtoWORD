@@ -5,6 +5,8 @@ set -Eeuo pipefail
 PORT=5000
 COZE_WORKSPACE_PATH="${COZE_WORKSPACE_PATH:-$(pwd)}"
 DEPLOY_RUN_PORT=5000
+HOST="${HOST:-0.0.0.0}"
+COZE_PROJECT_ENV="${COZE_PROJECT_ENV:-DEV}"
 
 
 cd "${COZE_WORKSPACE_PATH}"
@@ -36,8 +38,11 @@ pip3 install -q openpyxl==3.1.2 python-docx==1.1.0
 
 # 设置环境变量，确保应用能正确找到项目根目录
 export COZE_WORKSPACE_PATH="${COZE_WORKSPACE_PATH}"
+export HOST="${HOST}"
+export COZE_PROJECT_ENV="${COZE_PROJECT_ENV}"
 
 echo "Starting HTTP service on port ${PORT} for dev..."
 echo "Project root: ${COZE_WORKSPACE_PATH}"
+echo "Runtime env: COZE_PROJECT_ENV=${COZE_PROJECT_ENV}, HOST=${HOST}"
 
 PORT=$PORT pnpm tsx watch src/server.ts

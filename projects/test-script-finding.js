@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-require-imports */
 /**
  * 测试Python脚本查找逻辑
  * 模拟不同环境下的行为

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
+import { mkdir, readFile, writeFile } from 'fs/promises';
+import { existsSync, statSync } from 'fs';
 import path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     let scriptPath: string | null = null;
     for (const testPath of scriptPaths) {
-      if (require('fs').existsSync(testPath)) {
+      if (existsSync(testPath)) {
         scriptPath = testPath;
         break;
       }
@@ -82,8 +83,8 @@ export async function POST(request: NextRequest) {
     console.log('Project root:', projectRoot);
     console.log('Working directory:', process.cwd());
     console.log('Script path:', scriptPath);
-    console.log('Script exists:', require('fs').existsSync(scriptPath));
-    console.log('Script file stats:', scriptPath ? require('fs').statSync(scriptPath) : 'N/A');
+    console.log('Script exists:', existsSync(scriptPath));
+    console.log('Script file stats:', scriptPath ? statSync(scriptPath) : 'N/A');
     console.log('Command:', `python3 "${scriptPath}" "${excelTempPath}" "${wordTempPath}" "${outputDir}"`);
     console.log('========================');
 
@@ -112,11 +113,13 @@ export async function POST(request: NextRequest) {
     let result;
     try {
       result = JSON.parse(stdout);
-    } catch (parseError) {
+    } catch (parseError: unknown) {
       console.error('JSON parse error:', parseError);
       console.error('Raw stdout:', stdout);
+      const parseErrorMessage =
+        parseError instanceof Error ? parseError.message : String(parseError);
       return NextResponse.json(
-        { error: `Python脚本输出格式错误: ${parseError.message}` },
+        { error: `Python脚本输出格式错误: ${parseErrorMessage}` },
         { status: 500 }
       );
     }
@@ -130,7 +133,7 @@ export async function POST(request: NextRequest) {
 
     // 读取生成的Word文件
     const generatedFilePath = path.join(outputDir, result.output_file);
-    const fileBuffer = await require('fs').promises.readFile(generatedFilePath);
+    const fileBuffer = await readFile(generatedFilePath);
 
     // 返回文件流（直接下载）
     return new NextResponse(fileBuffer, {

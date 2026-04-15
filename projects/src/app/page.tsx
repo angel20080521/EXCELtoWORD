@@ -47,7 +47,7 @@ export default function ExcelToWordGenerator() {
             const textContent = await response.text();
             errorMessage = textContent || `HTTP ${response.status}: ${response.statusText}`;
           }
-        } catch (parseError) {
+        } catch {
           // 如果解析失败，使用默认错误信息
           errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         }
