@@ -7,8 +7,8 @@ VENV_BACKUP_DIR=""
 
 restore_venv() {
   if [ -n "${VENV_PATH}" ] && [ -n "${VENV_BACKUP_DIR}" ] && [ -e "${VENV_BACKUP_DIR}" ]; then
-    mv "${VENV_BACKUP_DIR}" "${VENV_PATH}"
-    echo "Restored local virtual environment: ${VENV_PATH}"
+    # mv "${VENV_BACKUP_DIR}" "${VENV_PATH}"
+    # echo "Restored local virtual environment: ${VENV_PATH}"
   fi
 }
 
@@ -29,7 +29,7 @@ for candidate in venv .venv; do
     VENV_BACKUP_DIR="/tmp/exceltoword-${candidate//./}-build-backup-$$"
     rm -rf "${VENV_BACKUP_DIR}"
     echo "Temporarily moving ${candidate} out of the project to avoid Next.js symlink tracing issues..."
-    mv "${VENV_PATH}" "${VENV_BACKUP_DIR}"
+    # mv "${VENV_PATH}" "${VENV_BACKUP_DIR}"
     break
   fi
 done

@@ -34,7 +34,11 @@ kill_port_if_listening
 
 # 确保Python依赖已安装
 echo "Ensuring Python dependencies are installed..."
-pip3 install -q openpyxl==3.1.2 python-docx==1.1.0
+if [ ! -d "venv" ]; then
+  echo "Creating Python virtual environment..."
+  python3 -m venv venv
+fi
+source venv/bin/activate && pip install -q openpyxl==3.1.2 python-docx==1.1.0
 
 # 设置环境变量，确保应用能正确找到项目根目录
 export COZE_WORKSPACE_PATH="${COZE_WORKSPACE_PATH}"
